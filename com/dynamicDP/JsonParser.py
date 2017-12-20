@@ -11,7 +11,7 @@ for stripNewLine in fileList:
 
 print(keysList)
 
-jsonObj = open('/home/osboxes/shared-windows10/RTDTAdDelivery_6193_20170903.dat._PEL.bz2','r')
+jsonObj = open('/home/osboxes/shared-windows10/comscore_intl_cadence.json','r')
 parsed_json = json.load(jsonObj)
 
 print(parsed_json)

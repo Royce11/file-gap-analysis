@@ -17,8 +17,9 @@ def writeToCsv(dictList):
                 w.writeheader()
                 w.writerow(dictObject)
 
-f = open('missingDates.csv', "w+")
-f.close()
+Transformation.initCsv()
+# f = open('missingDates.csv', "w+")
+# f.close()
 
 for args in argv[1:]:
 
@@ -35,4 +36,4 @@ for args in argv[1:]:
 
     dict_list.append(Transformation.getDictListFromResponseCommonPrefixes(response,**metadata))
 
-writeToCsv(dict_list)
+# writeToCsv(dict_list)

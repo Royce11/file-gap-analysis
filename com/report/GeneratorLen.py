@@ -7,4 +7,4 @@ class GeneratorLen(object):
         return self.length
 
     def __iter__(self):
-        return self.gen
+        return self.gen 

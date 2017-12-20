@@ -9,7 +9,7 @@ dict_list = []
 
 Transformation.initCsv()
 
-fileObj = open('/home/osboxes/shared-windows10/comscore_intl_input.txt','r')
+fileObj = open('/home/osboxes/shared-windows10/comscore_liveramp_input.txt','r')
 
 fileList= fileObj.readlines()
 
@@ -28,12 +28,12 @@ for args in pathsList:
     metadata = {'vendor' : vendor, 'datasource' : datasource, 'country' : country, 'cadence' : 'daily'}
 
 
-    jsonObj = open('/home/osboxes/shared-windows10/comscore_intl_cadence.json','r')
-    comscore_intl_cadence_dict = json.load(jsonObj)
+    jsonObj = open('/home/osboxes/shared-windows10/comscore_liveramp_cadence.json','r')
+    comscore_liveramp_cadence_dict = json.load(jsonObj)
 
     if vendor == 'comscore':
-        if datasource in comscore_intl_cadence_dict:
-            metadata['cadence'] = comscore_intl_cadence_dict.get(datasource)
+        if datasource in comscore_liveramp_cadence_dict:
+            metadata['cadence'] = comscore_liveramp_cadence_dict.get(datasource)
 
     response = client.list_objects_v2(Bucket='idiom-vendor-data',Delimiter = '/',Prefix = args)
 
