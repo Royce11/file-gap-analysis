@@ -3,6 +3,17 @@ from datetime import datetime, timedelta,date
 from itertools import tee
 from collections import OrderedDict
 import csv
+import collections
+
+def namedtuple_with_defaults(typename, field_names, default_values=()):
+    T = collections.namedtuple(typename, field_names)
+    T.__new__.__defaults__ = (None,) * len(T._fields)
+    if isinstance(default_values, collections.Mapping):
+        prototype = T(**default_values)
+    else:
+        prototype = T(*default_values)
+    T.__new__.__defaults__ = tuple(prototype)
+    return T
 
 def writeToCsv(dictObject):
     with open('missingDates.csv', 'a') as f:# Just use 'w' mode in 3.x
@@ -29,15 +40,16 @@ def missing_dates(dates,timeDeltaParam):
             i = prev
             while i + timedelta(timeDeltaParam) < curr:
                 i += timedelta(timeDeltaParam)
-                if i > date(2016, 1, 1):
+                if i > date(2015, 12, 31):
                     yield i
 
 
 def getFormattedDate(dateElement):
 
     if '-' not in dateElement:
-        dateElement = '-'.join(map(str,dateElement[1:4]))
+        dateElement = '-'.join(map(str,dateElement[0:3]))
 
+    # dateFormat = datetime.date(datetime.strptime(dateElement,'%W'))
     dateFormat = datetime.date(datetime.strptime(dateElement,'%Y-%m-%d'))
 
     return dateFormat
@@ -97,16 +109,56 @@ def generateDictForCsv(missing_dates_set,**keywords):
 
     return dictForCsv
 
-def getDictListForHPEOriginal(response,**hpe_original_filePattern_dict):
+def rentrakFileHandler(response,test):
+    generalFilePattern = []
+    hispFilePattern = []
+
+    for fullFileName in response:
+        if "hisp" in fullFileName:
+            hispanicExtractedDate=getListofDates(test,fullFileName)
+            if hispanicExtractedDate:
+                hispFilePattern.append(getFormattedDate(hispanicExtractedDate))
+        else:
+            extractedDate=getListofDates(test,fullFileName)
+            if extractedDate:
+                generalFilePattern.append(getFormattedDate(extractedDate))
+
+    return set(generalFilePattern)
+
+def getDictListForHPEOriginal(response,**args):
 
     dict_list = []
     generalFilePattern = []
+    hispFilePattern = []
     keywords = {}
+    test =args.get('regex')
 
-    for fullFileName in response:
-        generalFilePattern.append(pickCorrectRegex(hpe_original_filePattern_dict,fullFileName))
+    FilePattern = namedtuple_with_defaults('FilePattern', 'general hispanic')
+
+
+    if args.get('cleanFlag') == True:
+        if "CommonPrefixes" in response.keys():
+            for prefixDictElement in response.get('CommonPrefixes'):
+                generalFilePattern.append(getFormattedDate(prefixDictElement.get('Prefix').split('/')[5].strip("dt=")))
+
+    if args.get('cleanFlag') == False:
+        for fullFileName in response:
+            extractedDate=getListofDates(test,fullFileName)
+            if extractedDate:
+                if "hisp" in fullFileName:
+                    args['type'] = 'hispanic'
+                    hispFilePattern.append(getFormattedDate(extractedDate))
+                else:
+                    args['type'] = 'non-hispanic'
+                    generalFilePattern.append(getFormattedDate(extractedDate))
+
+    if args.get('vendor') == 'rentrak':
+        return FilePattern(set(generalFilePattern),set(hispFilePattern))
+    else:
+        return FilePattern(set(generalFilePattern))
 
     dataSourceDict = createDataSourceDictfromListofFileNameTuples(generalFilePattern)
+
 
     for datasourceKey in dataSourceDict:
         keywords['datasource'] = datasourceKey.split('-')[4]
@@ -118,15 +170,22 @@ def getDictListForHPEOriginal(response,**hpe_original_filePattern_dict):
         # keywords['hisp'] = "N"
         dict_list.append(general_dict)
 
-def pickCorrectRegex(comscore_conf,filename):
-    for pattern in comscore_conf.keys():
-        match = re.match(pattern,filename)
+
+def insertDay(tupleElement):
+    tempList = list(tupleElement)
+    tempList.insert(len(tupleElement),'01')
+    tupleElement = tuple(tempList)
+    return tupleElement
+
+def getListofDates(comscore_conf,filename):
+    for pattern in comscore_conf:
+        match = re.findall(pattern,filename)
         if match:
-            tempList = list(match[0])
-            tempList.insert(len(match[0]),comscore_conf.get(pattern))
-            match = tuple(tempList)
-            break
-    return match
+            if int(match[0][0]) > 2015:
+                if len(match[0]) < 3:
+                    match = insertDay(match[0])
+                    return match
+                return match[0]
 
 def createDataSourceDictfromListofFileNameTuples(fileNamesList):
     dataSourceDict = {}

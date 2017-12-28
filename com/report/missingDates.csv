@@ -1,14 +1,1 @@
-vendor,datasource,country,cadence,type,Year-Month,Missing Dates,Missing Count
-hpe,liveramp-tracking,us,daily,matched,2017-6,"[6, 7, 8, 9, 10, 11, 17, 18, 19, 23, 24, 27]",12
-hpe,liveramp-tracking,us,daily,matched,2017-7,"[6, 9, 19, 20, 21, 22, 23, 28]",8
-hpe,liveramp-tracking,us,daily,matched,2017-8,"[9, 17, 18]",3
-hpe,liveramp-tracking,us,daily,matched,2017-9,[14],1
-hpe,liveramp-tracking,us,daily,matched,2017-12,[19],1
-hpe,liveramp-partner_xref,us,daily,matched,2017-10,"[5, 6, 7, 8, 9, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]",25
-hpe,liveramp-partner_xref,us,daily,matched,2017-11,"[1, 2, 3, 4, 5, 6, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]",27
-hpe,liveramp-partner_xref,us,daily,matched,2017-12,"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 19]",16
-hpe,liveramp-tracking,us,daily,matched,2017-6,"[6, 7, 8, 9, 10, 11, 17, 18, 19, 23, 24, 27]",12
-hpe,liveramp-tracking,us,daily,matched,2017-7,"[6, 9, 19, 20, 21, 22, 23, 28]",8
-hpe,liveramp-tracking,us,daily,matched,2017-8,"[9, 17, 18]",3
-hpe,liveramp-tracking,us,daily,matched,2017-9,[14],1
-hpe,liveramp-tracking,us,daily,matched,2017-12,[19],1
+vendor,datasource,country,cadence,Year-Month,Missing Dates,Missing Count

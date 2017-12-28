@@ -1,5 +1,5 @@
 import boto3
-from com.report import ComscoreIntlTransform
+from com.reportFromJson import ComscoreIntlTransform
 import json
 from collections import OrderedDict
 from datetime import datetime,timedelta,date
@@ -61,8 +61,6 @@ def getMonthsSet(datesList):
     monthsList = []
     if datesList:
         for dateElement in datesList:
-            if dateElement.day > 16:
-                dateElement = dateElement+timedelta(days=15)
             monthsList.append(datetime.strftime(dateElement,'%Y-%m'))
     return monthsList
 
@@ -74,7 +72,7 @@ def getMonthsRange(start_date,end_date=None):
         monthsList.append(datetime.strftime(dt.date(),'%Y-%m'))
     return monthsList
 
-jsonObj = open('/home/osboxes/shared-windows10/rentrak_try.json','r')
+jsonObj = open('/home/osboxes/shared-windows10/comscore_try.json','r')
 comscore_dict = json.load(jsonObj)
 
 def initExcelWB():
@@ -149,22 +147,10 @@ for vendors in comscore_dict:
             keywords['type'] = args.get('type')
             keywords['country'] = args.get('country')
 
-            RawAvailableDatesSet = ComscoreIntlTransform.namedtuple_with_defaults('RawAvailableDatesSet','general hispanic')
-            CleanAvailableDatesSet = ComscoreIntlTransform.namedtuple_with_defaults('CleanAvailableDatesSet','general hispanic')
-
-            AvailableDatesSet = ComscoreIntlTransform.namedtuple_with_defaults('AvailableDatesSet','general hispanic')
-
-            UnprocessedDatesSet = ComscoreIntlTransform.namedtuple_with_defaults('UnprocessedDatesSet','general hispanic')
-            MissedDatesSet = ComscoreIntlTransform.namedtuple_with_defaults('MissedDatesSet','general hispanic')
-
-            RawAvailableDatesSet.general = set()
-            RawAvailableDatesSet.hispanic = set()
-            CleanAvailableDatesSet.general = set()
-            CleanAvailableDatesSet.hispanic = set()
-
+            rawAvailableDatesSet = set()
+            cleanAvailableDatesSet = set()
 
             args['cleanFlag'] = False
-            args['vendor'] = keywords.get('vendor')
             response = dict()
             cumulativeResponse = []
             for rawInfo in args.get('raw'):
@@ -172,95 +158,87 @@ for vendors in comscore_dict:
                 rawPrefix = rawInfo.replace('/','%',1).split('%')[1]
                 response = client.list_objects_v2(Bucket= rawBucket ,Prefix = rawPrefix,Delimiter = '/')
                 cumulativeResponse.append(getFinalContentFromResponse(response , rawBucket))
-                finalContentList = []
             for response in cumulativeResponse:
-                AvailableDatesSet = ComscoreIntlTransform.getDictListForHPEOriginal(response,**args)
-                RawAvailableDatesSet.general.update(AvailableDatesSet.general)
-                if keywords.get('vendor') == 'rentrak':
-                    RawAvailableDatesSet.hispanic.update(AvailableDatesSet.hispanic)
-
+                rawAvailableDatesSet.update(ComscoreIntlTransform.getDictListForHPEOriginal(response,**args))
 
             #Keep it false for rentrak and hpe
-            args['cleanFlag'] = False
+            args['cleanFlag'] = True
             cumulativeResponse = []
             for cleanInfo in args.get('clean'):
                 cleanBucket = cleanInfo.split('/')[0]
                 cleanPrefix = cleanInfo.replace('/','%',1).split('%')[1]
-                response = client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/')
-                cumulativeResponse.append(getFinalContentFromResponse(response , cleanBucket))
-                finalContentList = []
+                # response = client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/')
+                cumulativeResponse.append(client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/'))
             for response in cumulativeResponse:
-                AvailableDatesSet = ComscoreIntlTransform.getDictListForHPEOriginal(response,**args)
-                CleanAvailableDatesSet.general.update(AvailableDatesSet.general)
-                if CleanAvailableDatesSet.hispanic:
-                    CleanAvailableDatesSet.hispanic.update(AvailableDatesSet.hispanic)
+                cleanAvailableDatesSet.update(ComscoreIntlTransform.getDictListForHPEOriginal(response,**args))
 
+            # unprocessedDatesSet = rawAvailableDatesSet.difference(cleanAvailableDatesSet)
 
-            UnprocessedDatesSet.general = RawAvailableDatesSet.general - CleanAvailableDatesSet.general
-            if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
-                UnprocessedDatesSet.hispanic = RawAvailableDatesSet.hispanic - CleanAvailableDatesSet.hispanic
+            unprocessedDatesSet = rawAvailableDatesSet - cleanAvailableDatesSet
+            compiled_List.append(unprocessedDatesSet)
 
             currentSheet = unprocessedWB.get_sheet_by_name(keywords.get('vendor'))
             #check if unprocessed dates set has only 1 element
-            keywords['type'] = args.get('type')
-            fieldNamesDict = rowWriter(currentSheet,sorted(UnprocessedDatesSet.general),**keywords)
+            fieldNamesDict = rowWriter(currentSheet,sorted(unprocessedDatesSet),**keywords)
+
             unprocessedWB.save(unprocessedWB_out)
-            if UnprocessedDatesSet.hispanic:
-                keywords['type'] = 'hispanic'
-                fieldNamesDict = rowWriter(currentSheet,sorted(UnprocessedDatesSet.hispanic),**keywords)
 
             if datasource.get('cadence') == "daily":
-                missingDatesSet = set(d_range(date(2016,1,1),date.today(),datasource.get('cadence'))) - (RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
-                if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
-                    missingHispDatesSet = set(d_range(date(2016,1,1),date.today(),datasource.get('cadence'))) - (RawAvailableDatesSet.hispanic.union(CleanAvailableDatesSet.hispanic))
+                missingDatesSet = set(d_range(date(2016,1,1),date.today(),datasource.get('cadence'))) - (rawAvailableDatesSet.union(cleanAvailableDatesSet))
+                # compiled_List.append(missingDatesSet)
 
             if datasource.get('cadence') == 'weekly':
                 missingDatesSet = []
                 weeksRange =[]
-                rawAvailableWeeksSet = getWeeksSet(RawAvailableDatesSet.general)
-                cleanAvailableWeeksSet = getWeeksSet(CleanAvailableDatesSet.general)
+                rawAvailableWeeksSet = getWeeksSet(rawAvailableDatesSet)
+                cleanAvailableWeeksSet = getWeeksSet(cleanAvailableDatesSet)
                 weeks_set = set(w_range(date(2016,1,1)))
                 missingWeeksSet = weeks_set - (rawAvailableWeeksSet.union(cleanAvailableWeeksSet))
 
                 for missingWeeks in missingWeeksSet:
                     missingDatesSet.append(Week.day(missingWeeks,0))
 
-                if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
-                    rawAvailableWeeksSet = getWeeksSet(RawAvailableDatesSet.hispanic)
-                    cleanAvailableWeeksSet = getWeeksSet(CleanAvailableDatesSet.hispanic)
-                    missingWeeksSet = weeks_set - (rawAvailableWeeksSet.union(cleanAvailableWeeksSet))
-
-                    for missingWeeks in missingWeeksSet:
-                        missingHispDatesSet.append(Week.day(missingWeeks,0))
-
             if datasource.get('cadence') == 'monthly':
                 missingDatesSet =[]
-                availableMonthsList = getMonthsSet(RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
+                availableMonthsList = getMonthsSet(rawAvailableDatesSet.union(cleanAvailableDatesSet))
                 monthsRange = getMonthsRange(start_date=date(2016,1,1))
                 missingMonthsSet = set(monthsRange) - set(availableMonthsList)
                 for yearMonth in missingMonthsSet:
                     missingDate = yearMonth + '-01'
                     missingDate = datetime.date(datetime.strptime(missingDate,'%Y-%m-%d'))
                     missingDatesSet.append(missingDate)
-                if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
-                    missingHispDatesSet =[]
-                    availableMonthsList = getMonthsSet(RawAvailableDatesSet.hispanic.union(CleanAvailableDatesSet.hispanic))
-                    missingMonthsSet = set(monthsRange) - set(availableMonthsList)
-                    for yearMonth in missingMonthsSet:
-                        missingDate = yearMonth + '-01'
-                        missingDate = datetime.date(datetime.strptime(missingDate,'%Y-%m-%d'))
-                        missingHispDatesSet.append(missingDate)
 
             currentSheet = missingWB.get_sheet_by_name(keywords.get('vendor'))
-            keywords['type'] = args.get('type')
+
             fieldNamesDict = rowWriter(currentSheet,sorted(missingDatesSet),**keywords)
 
             missingWB.save(missingWB_out)
 
-            if missingHispDatesSet:
-                keywords['type'] = 'hispanic'
-                fieldNamesDict = rowWriter(currentSheet,sorted(missingHispDatesSet),**keywords)
-
-                missingWB.save(missingWB_out)
-
         print("Done ......." +datasource.get('datasource'))
+
+
+
+
+        # def excelWriter(activeSheet,rowStart,**keywords):
+        #
+        #     offsetLength =len(keywords.get('year-month'))+2
+        #
+        #     activeSheet.merge_cells(start_row=rowStart,start_column=1,end_row=offsetLength,end_column=1)
+        #     activeSheet.cell(row=rowStart,column=1).value = keywords.get('datasource')
+        #
+        #     activeSheet.merge_cells(start_row=rowStart,start_column=2,end_row=offsetLength,end_column=2)
+        #     activeSheet.cell(row=rowStart,column=2).value = keywords.get('cadence')
+        #
+        #     activeSheet.merge_cells(start_row=rowStart,start_column=3,end_row=offsetLength,end_column=3)
+        #     activeSheet.cell(row=rowStart,column=3).value = keywords.get('type')
+        #
+        #     activeSheet.merge_cells(start_row=rowStart,start_column=4,end_row=offsetLength,end_column=4)
+        #     activeSheet.cell(row=rowStart,column=4).value = keywords.get('country')
+        #
+        #     #vendor	datasource	cadence	type	country	year-month	dates	count
+        #     for rowNum in range(rowStart,offsetLength):
+        #         activeSheet.cell(row=rowNum,column=5).value = keywords.get('year-month')[rowNum-2] #col6
+        #         activeSheet.cell(row=rowNum,column=6).value = str(keywords.get('dates')[rowNum-2]) #col7
+        #         activeSheet.cell(row=rowNum,column=7).value = keywords.get('count')[rowNum-2] #col8
+        #
+        #     return offsetLength
