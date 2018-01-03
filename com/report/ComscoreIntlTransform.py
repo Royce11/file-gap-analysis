@@ -125,12 +125,13 @@ def rentrakFileHandler(response,test):
 
     return set(generalFilePattern)
 
+
+
 def getDictListForHPEOriginal(response,**args):
 
-    dict_list = []
     generalFilePattern = []
     hispFilePattern = []
-    keywords = {}
+
     test =args.get('regex')
 
     FilePattern = namedtuple_with_defaults('FilePattern', 'general hispanic')
@@ -156,19 +157,6 @@ def getDictListForHPEOriginal(response,**args):
         return FilePattern(set(generalFilePattern),set(hispFilePattern))
     else:
         return FilePattern(set(generalFilePattern))
-
-    dataSourceDict = createDataSourceDictfromListofFileNameTuples(generalFilePattern)
-
-
-    for datasourceKey in dataSourceDict:
-        keywords['datasource'] = datasourceKey.split('-')[4]
-        keywords['vendor'] = datasourceKey.split('-')[0]
-        keywords['country'] = datasourceKey.split('-')[2]
-        keywords['cadence'] = datasourceKey.split('-')[3]
-        general_missing_set = getMissingDatesSetForDict(dataSourceDict.get(datasourceKey),**keywords) ##init 4
-        general_dict = generateDictForCsv(general_missing_set,**keywords) ##init 6
-        # keywords['hisp'] = "N"
-        dict_list.append(general_dict)
 
 
 def insertDay(tupleElement):

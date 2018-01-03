@@ -61,6 +61,8 @@ def getMonthsSet(datesList):
     monthsList = []
     if datesList:
         for dateElement in datesList:
+            if dateElement.day > 16:
+                dateElement = dateElement+timedelta(days=15)
             monthsList.append(datetime.strftime(dateElement,'%Y-%m'))
     return monthsList
 
@@ -184,7 +186,7 @@ for vendors in comscore_dict:
             unprocessedWB.save(unprocessedWB_out)
 
             if datasource.get('cadence') == "daily":
-                missingDatesSet = set(d_range(date(2016,1,1),date.today(),datasource.get('cadence'))) - (rawAvailableDatesSet.union(cleanAvailableDatesSet))
+                missingDatesSet = set(d_range(date(2017,1,1),date.today(),datasource.get('cadence'))) - (rawAvailableDatesSet.union(cleanAvailableDatesSet))
                 # compiled_List.append(missingDatesSet)
 
             if datasource.get('cadence') == 'weekly':
@@ -192,7 +194,7 @@ for vendors in comscore_dict:
                 weeksRange =[]
                 rawAvailableWeeksSet = getWeeksSet(rawAvailableDatesSet)
                 cleanAvailableWeeksSet = getWeeksSet(cleanAvailableDatesSet)
-                weeks_set = set(w_range(date(2016,1,1)))
+                weeks_set = set(w_range(date(2017,1,1)))
                 missingWeeksSet = weeks_set - (rawAvailableWeeksSet.union(cleanAvailableWeeksSet))
 
                 for missingWeeks in missingWeeksSet:
@@ -201,7 +203,7 @@ for vendors in comscore_dict:
             if datasource.get('cadence') == 'monthly':
                 missingDatesSet =[]
                 availableMonthsList = getMonthsSet(rawAvailableDatesSet.union(cleanAvailableDatesSet))
-                monthsRange = getMonthsRange(start_date=date(2016,1,1))
+                monthsRange = getMonthsRange(start_date=date(2017,1,1))
                 missingMonthsSet = set(monthsRange) - set(availableMonthsList)
                 for yearMonth in missingMonthsSet:
                     missingDate = yearMonth + '-01'
@@ -215,30 +217,3 @@ for vendors in comscore_dict:
             missingWB.save(missingWB_out)
 
         print("Done ......." +datasource.get('datasource'))
-
-
-
-
-        # def excelWriter(activeSheet,rowStart,**keywords):
-        #
-        #     offsetLength =len(keywords.get('year-month'))+2
-        #
-        #     activeSheet.merge_cells(start_row=rowStart,start_column=1,end_row=offsetLength,end_column=1)
-        #     activeSheet.cell(row=rowStart,column=1).value = keywords.get('datasource')
-        #
-        #     activeSheet.merge_cells(start_row=rowStart,start_column=2,end_row=offsetLength,end_column=2)
-        #     activeSheet.cell(row=rowStart,column=2).value = keywords.get('cadence')
-        #
-        #     activeSheet.merge_cells(start_row=rowStart,start_column=3,end_row=offsetLength,end_column=3)
-        #     activeSheet.cell(row=rowStart,column=3).value = keywords.get('type')
-        #
-        #     activeSheet.merge_cells(start_row=rowStart,start_column=4,end_row=offsetLength,end_column=4)
-        #     activeSheet.cell(row=rowStart,column=4).value = keywords.get('country')
-        #
-        #     #vendor	datasource	cadence	type	country	year-month	dates	count
-        #     for rowNum in range(rowStart,offsetLength):
-        #         activeSheet.cell(row=rowNum,column=5).value = keywords.get('year-month')[rowNum-2] #col6
-        #         activeSheet.cell(row=rowNum,column=6).value = str(keywords.get('dates')[rowNum-2]) #col7
-        #         activeSheet.cell(row=rowNum,column=7).value = keywords.get('count')[rowNum-2] #col8
-        #
-        #     return offsetLength
