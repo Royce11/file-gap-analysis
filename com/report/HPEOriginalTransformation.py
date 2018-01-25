@@ -29,7 +29,7 @@ def missing_dates(dates,timeDeltaParam):
             i = prev
             while i + timedelta(timeDeltaParam) < curr:
                 i += timedelta(timeDeltaParam)
-                if i > date(2017, 1, 1):
+                if i > date(2017, 9, 30):
                     yield i
 
 
@@ -102,7 +102,7 @@ def getDictListForHPEOriginal(response,**keywords):
 
     if "CommonPrefixes" in response.keys():
         for prefixDictElement in response.get('CommonPrefixes'):
-            datesList.append(prefixDictElement.get('Prefix').split('/')[6].strip("dt="))
+            datesList.append(prefixDictElement.get('Prefix').split('/')[5].strip("dt="))
 
         general_missing_list = getMissingDatesSetForDict(datesList,**keywords) ##init 4
         # general_missing_set = set(general_missing_list)

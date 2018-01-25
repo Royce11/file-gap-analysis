@@ -1,5 +1,6 @@
 import openpyxl
-from openpyxl.styles import NamedStyle,Font,Alignment
+from openpyxl.styles import NamedStyle,Font,Alignment,PatternFill
+from com.reporting import GeneralUtils
 
 unprocessedWB_out = '/home/osboxes/shared-windows10/UnprocessedDates.xlsx'
 missingWB_out = '/home/osboxes/shared-windows10/MissingDates.xlsx'
@@ -12,11 +13,15 @@ def addHeaderStyle(sheetTitle):
     if 'red_bold' not in missingWB._named_styles.names:
         red_bold = NamedStyle(name="red_bold")
         red_bold.font = Font(color='00FF0000', bold=True)
+        # red_bold.fill = PatternFill("solid", fgColor="FFCC00")
+        red_bold.alignment = Alignment(horizontal="center", vertical="center")
         missingWB.add_named_style(red_bold)
 
     if 'red_bold' not in unprocessedWB._named_styles.names:
         red_bold = NamedStyle(name="red_bold")
         red_bold.font = Font(color='00FF0000', bold=True)
+        # red_bold.fill = PatternFill("solid", fgColor="FFCC00")
+        red_bold.alignment = Alignment(horizontal="center", vertical="center")
         unprocessedWB.add_named_style(red_bold)
 
     for cell in currentSheet1["1:1"]:
@@ -45,3 +50,12 @@ def initExcelSheet(sheetTitle,fieldnames,vendorCount):
     unprocessedWB.save(unprocessedWB_out)
 
     addHeaderStyle(sheetTitle)
+
+def loadWorbook():
+
+    WBs= GeneralUtils.namedtuple_with_defaults("Workbooks","missing unprocessed")
+
+    missingWB = openpyxl.load_workbook(missingWB_out)
+    unprocessedWB = openpyxl.load_workbook(unprocessedWB_out)
+
+    return WBs(missingWB,unprocessedWB)

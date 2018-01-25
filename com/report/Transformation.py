@@ -29,7 +29,7 @@ def missing_dates(dates,timeDeltaParam):
             i = prev
             while i + timedelta(timeDeltaParam) < curr:
                 i += timedelta(timeDeltaParam)
-                if i > date(2016, 1, 1):
+                if i > date(2015,5,31):
                     yield i
 
 
@@ -156,6 +156,7 @@ def getDictListForComscoreIntl(response, **keywords):
     machineDemosFilePattern = []
     personDemosFileLists = []
     machineDemosFileLists = []
+    datasource = keywords['datasource']
 
     filenamePattern = r'.*/(?P<filename>.*(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2}).*)'
     demosPattern = r'.*/(?P<filename>.*(?P<year>\d{4})(?P<month>\d{2}).*)'
@@ -173,11 +174,6 @@ def getDictListForComscoreIntl(response, **keywords):
                         machineDemosFilePattern += re.findall(demosPattern,element)
                 else:
                     generalFilePattern += re.findall(filenamePattern,element)
-
-            general_missing_set = getMissingDatesSetForDict(generalFilePattern,**keywords) ##init 4
-            general_dict = generateDictForCsv(general_missing_set,**keywords) ##init 6
-            keywords['hisp'] = "N"
-            dict_list.append(general_dict)
 
             if personDemosFilePattern:
                 keywords['datasource'] = "person-demographic"
@@ -198,11 +194,19 @@ def getDictListForComscoreIntl(response, **keywords):
                 machineDemos_dict = generateDictForCsv(machineDemosMissingSet,**keywords)
                 dict_list.append(machineDemos_dict)
 
+            if generalFilePattern:
+                keywords['datasource'] = datasource
+                general_missing_set = getMissingDatesSetForDict(generalFilePattern,**keywords) ##init 4
+                general_dict = generateDictForCsv(general_missing_set,**keywords) ##init 6
+                keywords['hisp'] = "N"
+                dict_list.append(general_dict)
+
+
     return dict_list
 
 def insertDay(tupleElement):
     tempList = list(tupleElement)
-    tempList.insert(len(tupleElement)-1,'01')
+    tempList.insert(len(tupleElement),'1')
     tupleElement = tuple(tempList)
     return tupleElement
 

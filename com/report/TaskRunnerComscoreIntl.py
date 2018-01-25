@@ -9,7 +9,7 @@ dict_list = []
 
 Transformation.initCsv()
 
-fileObj = open('/home/osboxes/shared-windows10/comscore_intl_input.txt','r')
+fileObj = open('/home/osboxes/shared-windows10/comscore_intl_input_2018.txt','r')
 
 fileList= fileObj.readlines()
 
@@ -35,7 +35,7 @@ for args in pathsList:
         if datasource in comscore_intl_cadence_dict:
             metadata['cadence'] = comscore_intl_cadence_dict.get(datasource)
 
-    response = client.list_objects_v2(Bucket='idiom-vendor-data',Delimiter = '/',Prefix = args)
+    response = client.list_objects_v2(Bucket='idiom-vendor-data',Prefix = args)
 
     dict_list.append(Transformation.getDictListForComscoreIntl(response,**metadata))
 

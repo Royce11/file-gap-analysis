@@ -41,6 +41,21 @@ def getFormattedDate(dateElement):
 
     return dateFormat
 
+def getFilteredDates(datesSet,start_date,end_date):
+
+     datesList = list(datesSet)
+     indices_to_be_removed = []
+
+     if datesList:
+         for idxCount, dateElement in enumerate(datesList):
+             if dateElement < start_date or dateElement > end_date:
+                 indices_to_be_removed.append(idxCount)
+
+         datesList = [i for j, i in enumerate(datesList) if j not in indices_to_be_removed]
+
+     return set(datesList)
+
+
 def d_range(d1,d2):
     delta = d2 - d1 #assumes second date is always after first
     return [d1 + timedelta(days=i) for i in range(delta.days + 1)]
@@ -124,3 +139,10 @@ def getStartDate(dateElement):
 
 def getEndDate(dateElement):
     return min(dateElement,date.today())
+
+def prefixBuilder(prefix,**subs_value):
+    prefix_with_country =  re.sub(r'\${country}',subs_value.get('country'),prefix)
+    prefix_with_country_year = re.sub(r'\${year}',subs_value.get('year'),prefix_with_country)
+    prefix_with_country_year_month = re.sub(r'\${month}',subs_value.get('month'),prefix_with_country_year)
+
+    return prefix_with_country_year_month

@@ -1,7 +1,7 @@
 import json
 import openpyxl
 import os
-from com.reporting import RentrakHandler,ExcelUtilities,HPEHandler
+from com.reporting import RentrakHandler,ExcelUtilities,HPEHandler,ComscoreHandler
 import sys
 from datetime import datetime,date
 
@@ -45,6 +45,11 @@ def getHandler(vendors, **keywords):
         RentrakHandler.processExecute(vendors,inputStartDate,inputEndDate,**keywords)
     if vendor == 'hpe':
         HPEHandler.processExecute(vendors,inputStartDate,inputEndDate,**keywords)
+    if vendor == 'comscore':
+        ComscoreHandler.processExecute(vendors,inputStartDate,inputEndDate,**keywords)
+        # ComscoreHandler.ComscoreHandler.processExecute(vendors,inputStartDate,inputEndDate,**keywords)
+
+
 
 # pathname = '/home/osboxes/shared-windows10/Configs'
 
@@ -52,14 +57,14 @@ def getHandler(vendors, **keywords):
 #     with open(filename,'r') as json_data:
 #         rule_dict = json.load(json_data)
 
-for file in os.listdir("/home/osboxes/shared-windows10/Configs/"):
+for file in os.listdir("/home/osboxes/shared-windows10/Configs/Playground/"):
     if file.endswith(".json"):
-        filename = os.path.join("/home/osboxes/shared-windows10/Configs/", file)
+        filename = os.path.join("/home/osboxes/shared-windows10/Configs/Playground/", file)
         jsonObj = open(filename,'r')
         rule_dict = json.load(jsonObj)
 
-    for vendorCount, vendor in enumerate(rule_dict):
-        ExcelUtilities.initExcelSheet(vendor.get('vendor'),vendor.get('fieldnames'),vendorCount)
-        keywords = {'vendor': vendor.get('vendor'),'fieldnames' : vendor.get('fieldnames')}
+        for vendorCount, vendor in enumerate(rule_dict):
+            ExcelUtilities.initExcelSheet(vendor.get('vendor'),vendor.get('fieldnames'),vendorCount)
+            keywords = {'vendor': vendor.get('vendor'),'fieldnames' : vendor.get('fieldnames')}
 
-        getHandler(vendor,**keywords)
+            getHandler(vendor,**keywords)

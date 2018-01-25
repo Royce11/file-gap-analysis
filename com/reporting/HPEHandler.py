@@ -1,22 +1,12 @@
-from com.reporting import S3Utilities,GeneralUtils
+from com.reporting import S3Utilities,GeneralUtils,ExcelUtilities
 from datetime import datetime,date
 from isoweek import Week
 from collections import OrderedDict
-import openpyxl
 from openpyxl.styles import Alignment
 
 unprocessedWB_out = '/home/osboxes/shared-windows10/UnprocessedDates.xlsx'
 missingWB_out = '/home/osboxes/shared-windows10/MissingDates.xlsx'
 client = S3Utilities.getS3Client()
-
-def loadWorbook():
-
-    WBs= GeneralUtils.namedtuple_with_defaults("Workbooks","missing unprocessed")
-
-    missingWB = openpyxl.load_workbook(missingWB_out)
-    unprocessedWB = openpyxl.load_workbook(unprocessedWB_out)
-
-    return WBs(missingWB,unprocessedWB)
 
 def hpeRawFileHandler(response,dateRegex):
     generalFilePatternDict = dict()
@@ -72,13 +62,13 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
     startUnPRow = 1
     startMissRow =1
 
-    WBs = loadWorbook()
+    WBs = ExcelUtilities.loadWorbook()
     unprocessedWB = WBs.unprocessed
     missingWB = WBs.missing
 
     for datasource in vendors['data']:
         keywords['cadence'] = datasource.get('cadence')
-
+        vendor = keywords.get('vendor')
         for args in datasource.get('metadata'):
 
             if args.get('arrival_start_date') :
@@ -96,17 +86,17 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
             keywords['country'] = args.get('country')
             keywords['regex'] = args.get('regex')
 
-            RawAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('RawAvailableDatesSet','general hispanic')
-            CleanAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('CleanAvailableDatesSet','general hispanic')
+            RawAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('RawAvailableDatesSet','general')
+            CleanAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('CleanAvailableDatesSet','general')
             
-            UnprocessedDatesSet = GeneralUtils.namedtuple_with_defaults('UnprocessedDatesSet','general hispanic')
+            UnprocessedDatesSet = GeneralUtils.namedtuple_with_defaults('UnprocessedDatesSet','general')
             
             RawAvailableDatesSet.general = set()
             
             CleanAvailableDatesSet.general = set()
             
 
-            args['vendor'] = keywords.get('vendor')
+            args['vendor'] = vendor
             response = dict()
             cumulativeResponse = []
             for rawInfo in args.get('raw'):
@@ -134,7 +124,9 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
 
                     UnprocessedDatesSet.general = RawAvailableDatesSet.general - CleanAvailableDatesSet.general
 
-                    currentSheet = unprocessedWB.get_sheet_by_name(keywords.get('vendor'))
+                    UnprocessedDatesSet.general = GeneralUtils.getFilteredDates(UnprocessedDatesSet.general,start_date,end_date)
+
+                    currentSheet = unprocessedWB[vendor]
                     #check if unprocessed dates set has only 1 element
                     keywords['type'] = args.get('type')
                     startUnPRow = hpeRowWriter(currentSheet,sorted(UnprocessedDatesSet.general),startUnPRow,**keywords)
@@ -143,7 +135,7 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
 
                     if datasource.get('cadence') == "daily":
 
-                        missingDatesSet = set(GeneralUtils.d_range(start_date,end_date,datasource.get('cadence'))) - (RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
+                        missingDatesSet = set(GeneralUtils.d_range(start_date,end_date)) - (RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
 
                     if datasource.get('cadence') == 'weekly':
                         missingDatesSet = []
@@ -168,7 +160,7 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
                             missingDate = datetime.date(datetime.strptime(missingDate,'%Y-%m-%d'))
                             missingDatesSet.append(missingDate)
 
-                    currentSheet = missingWB.get_sheet_by_name(keywords.get('vendor'))
+                    currentSheet = missingWB[vendor]
                     keywords['type'] = args.get('type')
                     startMissRow = hpeRowWriter(currentSheet,sorted(missingDatesSet),startMissRow,**keywords)
 

@@ -1,4 +1,4 @@
-from com.reporting import S3Utilities,GeneralUtils
+from com.reporting import S3Utilities,GeneralUtils,ExcelUtilities
 from datetime import datetime,date
 from isoweek import Week
 from collections import OrderedDict
@@ -8,15 +8,6 @@ from openpyxl.styles import NamedStyle,Font,Alignment
 unprocessedWB_out = '/home/osboxes/shared-windows10/UnprocessedDates.xlsx'
 missingWB_out = '/home/osboxes/shared-windows10/MissingDates.xlsx'
 client = S3Utilities.getS3Client()
-
-def loadWorbook():
-
-    WBs= GeneralUtils.namedtuple_with_defaults("Workbooks","missing unprocessed")
-
-    missingWB = openpyxl.load_workbook(missingWB_out)
-    unprocessedWB = openpyxl.load_workbook(unprocessedWB_out)
-
-    return WBs(missingWB,unprocessedWB)
 
 def rentrakFileHandler(response,dateRegex):
     generalFilePattern = []
@@ -70,7 +61,7 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
     startUnPRow = 1
     startMissRow =1
 
-    WBs = loadWorbook()
+    WBs = ExcelUtilities.loadWorbook()
     unprocessedWB = WBs.unprocessed
     missingWB = WBs.missing
 
@@ -110,7 +101,7 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
             CleanAvailableDatesSet.hispanic = set()
 
 
-            args['vendor'] = keywords.get('vendor')
+            args['vendor'] = vendor
             response = dict()
             cumulativeResponse = []
             for rawInfo in args.get('raw'):
@@ -141,8 +132,11 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
 
 
             UnprocessedDatesSet.general = RawAvailableDatesSet.general - CleanAvailableDatesSet.general
+            UnprocessedDatesSet.general = GeneralUtils.getFilteredDates(UnprocessedDatesSet.general,start_date,end_date)
             if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
                 UnprocessedDatesSet.hispanic = RawAvailableDatesSet.hispanic - CleanAvailableDatesSet.hispanic
+                UnprocessedDatesSet.hispanic = GeneralUtils.getFilteredDates(UnprocessedDatesSet.hispanic,start_date,end_date)
+
 
             currentSheet = unprocessedWB[vendor]
             #check if unprocessed dates set has only 1 element
