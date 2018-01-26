@@ -82,89 +82,99 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
 
             missingDatesSet = []
 
+            yearMonthsRangeList = GeneralUtils.getMonthsRange(start_date,end_date)
+
             keywords['type'] = args.get('type')
             keywords['country'] = args.get('country')
             keywords['regex'] = args.get('regex')
 
-            RawAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('RawAvailableDatesSet','general')
-            CleanAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('CleanAvailableDatesSet','general')
-            
-            UnprocessedDatesSet = GeneralUtils.namedtuple_with_defaults('UnprocessedDatesSet','general')
-            
-            RawAvailableDatesSet.general = set()
-            
-            CleanAvailableDatesSet.general = set()
-            
+            for country in keywords.get('country'):
+                RawAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('RawAvailableDatesSet','general')
+                CleanAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('CleanAvailableDatesSet','general')
 
-            args['vendor'] = vendor
-            response = dict()
-            cumulativeResponse = []
-            for rawInfo in args.get('raw'):
-                rawBucket = rawInfo.split('/')[0]
-                rawPrefix = rawInfo.replace('/','%',1).split('%')[1]
-                response = client.list_objects_v2(Bucket= rawBucket ,Prefix = rawPrefix,Delimiter = '/')
-                cumulativeResponse.append(S3Utilities.getFinalContentFromResponse(client, response , rawBucket))
-                # finalContentList = []
-            for response in cumulativeResponse:
-                AvailableDatesAndSourceDict = hpeRawFileHandler(response,keywords.get('regex'))
+                UnprocessedDatesSet = GeneralUtils.namedtuple_with_defaults('UnprocessedDatesSet','general')
 
-                for source,dates in AvailableDatesAndSourceDict.items():
-                    keywords['datasource'] = source
-                    RawAvailableDatesSet.general.update(dates)
+                RawAvailableDatesSet.general = set()
 
-                    cumulativeResponse = []
-                    for cleanInfo in args.get('clean').get(source):
-                        cleanBucket = cleanInfo.split('/')[0]
-                        cleanPrefix = cleanInfo.replace('/','%',1).split('%')[1]
-                        response = client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/')
-                        # finalContentList = []
-                        AvailableDatesSet = hpeCleanFileHandler(response)
-                        CleanAvailableDatesSet.general.update(AvailableDatesSet.general)
+                CleanAvailableDatesSet.general = set()
 
 
-                    UnprocessedDatesSet.general = RawAvailableDatesSet.general - CleanAvailableDatesSet.general
+                args['vendor'] = vendor
+                response = dict()
+                cumulativeResponse = []
+                for rawInfo in args.get('raw'):
+                    for yearMonth_prefix in yearMonthsRangeList:
+                        rawBucket = rawInfo.split('/')[0]
+                        raw = rawInfo.replace('/','%',1).split('%')[1]
+                        subs_value = {'country' : country, 'year' : yearMonth_prefix.split('-')[0], 'month' : yearMonth_prefix.split('-')[1]}
+                        rawPrefix = GeneralUtils.prefixBuilder(raw,**subs_value)
+                        response = client.list_objects_v2(Bucket= rawBucket ,Prefix = rawPrefix,Delimiter = '/')
+                        cumulativeResponse.append(S3Utilities.getFinalContentFromResponse(client, response , rawBucket))
+                        S3Utilities.finalContentList = []
+                    # finalContentList = []
+                for response in cumulativeResponse:
+                    AvailableDatesAndSourceDict = hpeRawFileHandler(response,keywords.get('regex'))
 
-                    UnprocessedDatesSet.general = GeneralUtils.getFilteredDates(UnprocessedDatesSet.general,start_date,end_date)
+                    for source,dates in AvailableDatesAndSourceDict.items():
+                        keywords['datasource'] = source
+                        RawAvailableDatesSet.general.update(dates)
 
-                    currentSheet = unprocessedWB[vendor]
-                    #check if unprocessed dates set has only 1 element
-                    keywords['type'] = args.get('type')
-                    startUnPRow = hpeRowWriter(currentSheet,sorted(UnprocessedDatesSet.general),startUnPRow,**keywords)
-
-                    unprocessedWB.save(unprocessedWB_out)
-
-                    if datasource.get('cadence') == "daily":
-
-                        missingDatesSet = set(GeneralUtils.d_range(start_date,end_date)) - (RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
-
-                    if datasource.get('cadence') == 'weekly':
-                        missingDatesSet = []
-                        weeks_set = set(GeneralUtils.w_range(start_date=start_date,end_date=end_date))
-
-                        rawAvailableWeeksSet = GeneralUtils.getWeeksSet(RawAvailableDatesSet.general)
-                        cleanAvailableWeeksSet = GeneralUtils.getWeeksSet(CleanAvailableDatesSet.general)
-                        missingWeeksSet = weeks_set - (rawAvailableWeeksSet.union(cleanAvailableWeeksSet))
-
-                        for missingWeeks in missingWeeksSet:
-                            missingDatesSet.append(Week.day(missingWeeks,0))
+                        cumulativeResponse = []
+                        for cleanInfo in args.get('clean').get(source):
+                            for yearMonth_prefix in yearMonthsRangeList:
+                                cleanBucket = cleanInfo.split('/')[0]
+                                clean = cleanInfo.replace('/','%',1).split('%')[1]
+                                subs_value = {'country' : country.lower(), 'year' : yearMonth_prefix.split('-')[0], 'month' : yearMonth_prefix.split('-')[1]}
+                                cleanPrefix = GeneralUtils.prefixBuilder(clean,**subs_value)
+                                response = client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/')
+                                # finalContentList = []
+                                AvailableDatesSet = hpeCleanFileHandler(response)
+                                CleanAvailableDatesSet.general.update(AvailableDatesSet.general)
 
 
-                    if datasource.get('cadence') == 'monthly':
-                        missingDatesSet =[]
-                        monthsRange = GeneralUtils.getMonthsRange(start_date=start_date,end_date=end_date)
+                        UnprocessedDatesSet.general = RawAvailableDatesSet.general - CleanAvailableDatesSet.general
 
-                        availableMonthsList = GeneralUtils.getMonthsSet(RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
-                        missingMonthsSet = set(monthsRange) - set(availableMonthsList)
-                        for yearMonth in missingMonthsSet:
-                            missingDate = yearMonth + '-01'
-                            missingDate = datetime.date(datetime.strptime(missingDate,'%Y-%m-%d'))
-                            missingDatesSet.append(missingDate)
+                        UnprocessedDatesSet.general = GeneralUtils.getFilteredDates(UnprocessedDatesSet.general,start_date,end_date)
 
-                    currentSheet = missingWB[vendor]
-                    keywords['type'] = args.get('type')
-                    startMissRow = hpeRowWriter(currentSheet,sorted(missingDatesSet),startMissRow,**keywords)
+                        currentSheet = unprocessedWB[vendor]
+                        #check if unprocessed dates set has only 1 element
+                        keywords['type'] = args.get('type')
+                        startUnPRow = hpeRowWriter(currentSheet,sorted(UnprocessedDatesSet.general),startUnPRow,**keywords)
 
-                    missingWB.save(missingWB_out)
+                        unprocessedWB.save(unprocessedWB_out)
+
+                        if datasource.get('cadence') == "daily":
+
+                            missingDatesSet = set(GeneralUtils.d_range(start_date,end_date)) - (RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
+
+                        if datasource.get('cadence') == 'weekly':
+                            missingDatesSet = []
+                            weeks_set = set(GeneralUtils.w_range(start_date=start_date,end_date=end_date))
+
+                            rawAvailableWeeksSet = GeneralUtils.getWeeksSet(RawAvailableDatesSet.general)
+                            cleanAvailableWeeksSet = GeneralUtils.getWeeksSet(CleanAvailableDatesSet.general)
+                            missingWeeksSet = weeks_set - (rawAvailableWeeksSet.union(cleanAvailableWeeksSet))
+
+                            for missingWeeks in missingWeeksSet:
+                                missingDatesSet.append(Week.day(missingWeeks,0))
+
+
+                        if datasource.get('cadence') == 'monthly':
+                            missingDatesSet =[]
+                            monthsRange = GeneralUtils.getMonthsRange(start_date=start_date,end_date=end_date)
+
+                            availableMonthsList = GeneralUtils.getMonthsSet(RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
+                            missingMonthsSet = set(monthsRange) - set(availableMonthsList)
+                            for yearMonth in missingMonthsSet:
+                                missingDate = yearMonth + '-01'
+                                missingDate = datetime.date(datetime.strptime(missingDate,'%Y-%m-%d'))
+                                missingDatesSet.append(missingDate)
+
+                        currentSheet = missingWB[vendor]
+                        keywords['type'] = args.get('type')
+                        startMissRow = hpeRowWriter(currentSheet,sorted(missingDatesSet),startMissRow,**keywords)
+
+                        missingWB.save(missingWB_out)
 
 
             print("Done ......." +datasource.get('datasource'))

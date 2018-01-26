@@ -2,19 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0ec5c9ee-ad4f-49af-8e96-2ceefe8c4be4" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/com/report/Comscore_Clean_Old_Runner.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/com/reporting/BaseHandler.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/com/reporting/ComscoreHandler.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/report/HPEOriginalTransformation.py" afterPath="$PROJECT_DIR$/com/report/HPEOriginalTransformation.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/report/TaskRunnerComscoreIntl.py" afterPath="$PROJECT_DIR$/com/report/TaskRunnerComscoreIntl.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/report/Transformation.py" afterPath="$PROJECT_DIR$/com/report/Transformation.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/report/missingDates.csv" afterPath="$PROJECT_DIR$/com/report/missingDates.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/reporting/ExcelUtilities.py" afterPath="$PROJECT_DIR$/com/reporting/ExcelUtilities.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/reporting/ComscoreHandler.py" afterPath="$PROJECT_DIR$/com/reporting/ComscoreHandler.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/reporting/GeneralUtils.py" afterPath="$PROJECT_DIR$/com/reporting/GeneralUtils.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/reporting/GenericRunner.py" afterPath="$PROJECT_DIR$/com/reporting/GenericRunner.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/reporting/HPEHandler.py" afterPath="$PROJECT_DIR$/com/reporting/HPEHandler.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/com/reporting/RentrakHandler.py" afterPath="$PROJECT_DIR$/com/reporting/RentrakHandler.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -29,18 +21,18 @@
       <file leaf-file-name="GenericRunner.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/com/reporting/GenericRunner.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="397">
-              <caret line="48" column="27" lean-forward="true" selection-start-line="48" selection-start-column="27" selection-end-line="48" selection-end-column="27" />
+            <state relative-caret-position="360">
+              <caret line="61" column="79" lean-forward="false" selection-start-line="61" selection-start-column="79" selection-end-line="61" selection-end-column="79" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ComscoreHandler.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ComscoreHandler.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/com/reporting/ComscoreHandler.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="77">
-              <caret line="121" column="0" lean-forward="false" selection-start-line="121" selection-start-column="0" selection-end-line="121" selection-end-column="0" />
+            <state relative-caret-position="171">
+              <caret line="29" column="0" lean-forward="true" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
               <folding>
                 <element signature="e#0#65#0" expanded="true" />
               </folding>
@@ -48,11 +40,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GeneralUtils.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="HPEHandler.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/com/reporting/HPEHandler.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="108" column="78" lean-forward="false" selection-start-line="108" selection-start-column="78" selection-end-line="108" selection-end-column="78" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="S3Utilities.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/com/reporting/S3Utilities.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="270">
+              <caret line="19" column="4" lean-forward="false" selection-start-line="19" selection-start-column="4" selection-end-line="19" selection-end-column="4" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GeneralUtils.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/com/reporting/GeneralUtils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="512">
-              <caret line="147" column="41" lean-forward="false" selection-start-line="147" selection-start-column="41" selection-end-line="147" selection-end-column="41" />
+            <state relative-caret-position="190">
+              <caret line="43" column="4" lean-forward="false" selection-start-line="43" selection-start-column="4" selection-end-line="43" selection-end-column="4" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -104,7 +116,6 @@
         <option value="$PROJECT_DIR$/com/report/ComscoreRunner.py" />
         <option value="/usr/local/lib/python3.5/dist-packages/openpyxl/reader/excel.py" />
         <option value="$PROJECT_DIR$/com/reporting/BaseHandler.py" />
-        <option value="$PROJECT_DIR$/com/reporting/HPEHandler.py" />
         <option value="$PROJECT_DIR$/com/reporting/RentrakHandler.py" />
         <option value="$PROJECT_DIR$/com/reporting/ExcelUtilities.py" />
         <option value="$PROJECT_DIR$/com/report/TaskRunnerComscoreIntl.py" />
@@ -112,9 +123,10 @@
         <option value="$PROJECT_DIR$/com/report/HPEOriginalTransformation.py" />
         <option value="$PROJECT_DIR$/com/report/HPEOriginalNew.py" />
         <option value="$PROJECT_DIR$/com/report/Transformation.py" />
+        <option value="$PROJECT_DIR$/com/reporting/GeneralUtils.py" />
+        <option value="$PROJECT_DIR$/com/reporting/HPEHandler.py" />
         <option value="$PROJECT_DIR$/com/reporting/GenericRunner.py" />
         <option value="$PROJECT_DIR$/com/reporting/ComscoreHandler.py" />
-        <option value="$PROJECT_DIR$/com/reporting/GeneralUtils.py" />
       </list>
     </option>
   </component>
@@ -206,14 +218,14 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="/usr/bin/python3.5" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/com/reporting" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="FileGaps" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/com/reporting/GenericRunner.py" />
-      <option name="PARAMETERS" value="" />
+      <option name="PARAMETERS" value="&quot;2017-10-02&quot;" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
     </configuration>
@@ -384,7 +396,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="30" width="1920" height="946" extended-state="6" />
+    <frame x="0" y="30" width="1440" height="766" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -394,17 +406,17 @@
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2761905" sideWeight="0.5078125" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22047244" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.6015748" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17395945" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23385939" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19631901" sideWeight="0.4921875" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.46299213" sideWeight="0.4921875" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -464,13 +476,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/com/reporting/ComscoreHandler.py</url>
-          <line>93</line>
-          <option name="timeStamp" value="295" />
+          <line>158</line>
+          <option name="timeStamp" value="305" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/com/reporting/ComscoreHandler.py</url>
-          <line>121</line>
-          <option name="timeStamp" value="297" />
+          <line>142</line>
+          <option name="timeStamp" value="307" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -480,21 +492,13 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="298" />
+      <option name="time" value="308" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="currentSheet.max_row" />
-        <watch expression="currentSheet._current_row" />
-        <watch expression="startRow" />
-        <watch expression="fieldNamesDict" />
-        <watch expression="start_row" />
         <watch expression="RawAvailableDatesSet.general" />
         <watch expression="UnprocessedDatesSet.general" />
-        <watch expression="RawAvailableDatesSet" />
-        <watch expression="missingWB._named_styles" />
-        <watch expression="fieldNamesDict" />
-        <watch expression="os.listdir(&quot;/home/osboxes/shared-windows10/Configs/&quot;)" />
+        <watch expression="CleanAvailableDatesSet.general" />
       </configuration>
     </watches-manager>
   </component>
@@ -696,13 +700,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/com/reporting/HPEHandler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="298">
-          <caret line="129" column="70" lean-forward="true" selection-start-line="129" selection-start-column="70" selection-end-line="129" selection-end-column="70" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/com/reportFromJson/ComscoreIntlTransform.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-210">
@@ -721,13 +718,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="7" column="31" lean-forward="true" selection-start-line="7" selection-start-column="31" selection-end-line="7" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/com/reporting/S3Utilities.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="114">
-          <caret line="19" column="4" lean-forward="false" selection-start-line="19" selection-start-column="4" selection-end-line="19" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -756,13 +746,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="159">
           <caret line="204" column="4" lean-forward="false" selection-start-line="204" selection-start-column="4" selection-end-line="204" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/lib/python3/dist-packages/apport_python_hook.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="127">
-          <caret line="46" column="0" lean-forward="false" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -802,14 +785,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/com/report/HPEOriginalNew.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="9" column="35" lean-forward="true" selection-start-line="9" selection-start-column="35" selection-end-line="9" selection-end-column="35" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/com/report/ComscoreRunner.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="15">
@@ -836,30 +811,62 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/com/report/HPEOriginalNew.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-13">
+          <caret line="16" column="43" lean-forward="true" selection-start-line="16" selection-start-column="43" selection-end-line="16" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python3/dist-packages/apport_python_hook.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="127">
+          <caret line="46" column="0" lean-forward="false" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/com/reporting/HPEHandler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="108" column="78" lean-forward="false" selection-start-line="108" selection-start-column="78" selection-end-line="108" selection-end-column="78" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/com/reporting/S3Utilities.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="19" column="4" lean-forward="false" selection-start-line="19" selection-start-column="4" selection-end-line="19" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/com/reporting/GeneralUtils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="190">
+          <caret line="43" column="4" lean-forward="false" selection-start-line="43" selection-start-column="4" selection-end-line="43" selection-end-column="4" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/com/reporting/GenericRunner.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="397">
-          <caret line="48" column="27" lean-forward="true" selection-start-line="48" selection-start-column="27" selection-end-line="48" selection-end-column="27" />
+        <state relative-caret-position="360">
+          <caret line="61" column="79" lean-forward="false" selection-start-line="61" selection-start-column="79" selection-end-line="61" selection-end-column="79" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/com/reporting/ComscoreHandler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="77">
-          <caret line="121" column="0" lean-forward="false" selection-start-line="121" selection-start-column="0" selection-end-line="121" selection-end-column="0" />
+        <state relative-caret-position="171">
+          <caret line="29" column="0" lean-forward="true" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
           <folding>
             <element signature="e#0#65#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/com/reporting/GeneralUtils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="512">
-          <caret line="147" column="41" lean-forward="false" selection-start-line="147" selection-start-column="41" selection-end-line="147" selection-end-column="41" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>

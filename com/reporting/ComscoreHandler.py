@@ -34,6 +34,19 @@ def comscoreCleanFileHandler(response):
 
     return set(CleanFilePattern.general)
 
+
+def comscoreToLiverampCleanFile(response,dateRegex):
+    CleanFilePattern = GeneralUtils.namedtuple_with_defaults('CleanFilePattern', 'general')
+
+    CleanFilePattern.general = []
+
+    for fullFileName in response:
+        extractedDate=GeneralUtils.extractDate(dateRegex,fullFileName)
+        if extractedDate:
+            CleanFilePattern.general.append(GeneralUtils.getFormattedDate(extractedDate))
+
+    return set(CleanFilePattern.general)
+
 def comscoreRowWriter(currentSheet,datesSet,startRow,**keywords):
     tempDict = OrderedDict()
 
@@ -50,7 +63,7 @@ def comscoreRowWriter(currentSheet,datesSet,startRow,**keywords):
             fieldNamesDict = {'A': keywords.get('datasource'),
                               'B' : keywords.get('cadence'),
                               'C' : keywords.get('type'),
-                              'D' : keywords.get('country'),
+                              'D' : keywords.get('country').upper(),
                               'E' : keywords.get('year-month'),
                               'F' : keywords.get('dates'),
                               'G' : keywords.get('count')}
@@ -89,11 +102,14 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
 
             missingDatesSet = []
 
+            yearMonthsRangeList = GeneralUtils.getMonthsRange(start_date,end_date)
+
             keywords['type'] = args.get('type')
-            keywords['country'] = args.get('country')
+            country_list = args.get('country')
             keywords['regex'] = args.get('regex')
 
-            for country in keywords.get('country'):
+            for country in country_list:
+                keywords['country'] = country
                 RawAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('RawAvailableDatesSet','general')
                 CleanAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('CleanAvailableDatesSet','general')
 
@@ -106,22 +122,35 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
                 response = dict()
                 cumulativeResponse = []
                 for rawInfo in args.get('raw'):
-                    rawBucket = rawInfo.split('/')[0]
-                    raw = rawInfo.replace('/','%',1).split('%')[1]
-                    rawPrefix = GeneralUtils.prefixBuilder(raw,country)
-                    response = client.list_objects_v2(Bucket= rawBucket ,Prefix = rawPrefix,Delimiter = '/')
-                    cumulativeResponse.append(S3Utilities.getFinalContentFromResponse(client, response , rawBucket))
+                    for yearMonth_prefix in yearMonthsRangeList:
+                        rawBucket = rawInfo.split('/')[0]
+                        raw = rawInfo.replace('/','%',1).split('%')[1]
+                        subs_value = {'country' : country, 'year' : yearMonth_prefix.split('-')[0], 'month' : yearMonth_prefix.split('-')[1]}
+                        rawPrefix = GeneralUtils.prefixBuilder(raw,**subs_value)
+                        response = client.list_objects_v2(Bucket= rawBucket ,Prefix = rawPrefix,Delimiter = '/')
+                        cumulativeResponse.append(S3Utilities.getFinalContentFromResponse(client, response , rawBucket))
+                        S3Utilities.finalContentList = []
                 for response in cumulativeResponse:
                     RawAvailableDatesSet.general.update(comscoreRawFileHandler(response,keywords.get('regex')))
 
                 cumulativeResponse = []
                 for cleanInfo in args.get('clean'):
-                    cleanBucket = cleanInfo.split('/')[0]
-                    clean = cleanInfo.replace('/','%',1).split('%')[1]
-                    cleanPrefix = GeneralUtils.prefixBuilder(clean,country.lower())
-                    cumulativeResponse.append(client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/'))
-                for response in cumulativeResponse:
-                    CleanAvailableDatesSet.general.update(comscoreCleanFileHandler(response))
+                    for yearMonth_prefix in yearMonthsRangeList:
+                        cleanBucket = cleanInfo.split('/')[0]
+                        clean = cleanInfo.replace('/','%',1).split('%')[1]
+                        subs_value = {'country' : country.lower(), 'year' : yearMonth_prefix.split('-')[0], 'month' : yearMonth_prefix.split('-')[1]}
+                        cleanPrefix = GeneralUtils.prefixBuilder(clean,**subs_value)
+                        if keywords.get('type') == "comscore_to_liveramp" :
+                            response = client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/')
+                            cumulativeResponse.append(S3Utilities.getFinalContentFromResponse(client, response , cleanBucket))
+                        else :
+                            cumulativeResponse.append(client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/'))
+                    if keywords.get('type') == "comscore_to_liveramp" :
+                        for response in cumulativeResponse:
+                            CleanAvailableDatesSet.general.update(comscoreToLiverampCleanFile(response,keywords.get('regex')))
+                    else :
+                        for response in cumulativeResponse:
+                            CleanAvailableDatesSet.general.update(comscoreCleanFileHandler(response))
 
                 UnprocessedDatesSet.general = RawAvailableDatesSet.general - CleanAvailableDatesSet.general
 
