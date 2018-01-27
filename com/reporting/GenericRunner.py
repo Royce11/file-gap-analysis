@@ -57,9 +57,9 @@ def getHandler(vendors, **keywords):
 #     with open(filename,'r') as json_data:
 #         rule_dict = json.load(json_data)
 
-for file in os.listdir("/home/osboxes/shared-windows10/Configs/OnlyOne/"):
+for file in os.listdir("/home/osboxes/shared-windows10/Configs/Playground/"):
     if file.endswith(".json"):
-        filename = os.path.join("/home/osboxes/shared-windows10/Configs/OnlyOne/", file)
+        filename = os.path.join("/home/osboxes/shared-windows10/Configs/Playground/", file)
         jsonObj = open(filename,'r')
         rule_dict = json.load(jsonObj)
 
