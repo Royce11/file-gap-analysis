@@ -28,7 +28,7 @@ def missing_dates(dates,timeDeltaParam):
             i = prev
             while i + timedelta(timeDeltaParam) < curr:
                 i += timedelta(timeDeltaParam)
-                if i > date(2015, 12, 31):
+                if i > date(2014, 12, 31):
                     yield i
 
 def getFormattedDate(dateElement):
@@ -92,12 +92,18 @@ def getMonthsSet(datesList):
             monthsList.append(datetime.strftime(dateElement,'%Y-%m'))
     return monthsList
 
-def getMonthsRange(start_date,end_date=None):
+def getMonthsRange(start_date,end_date=None,exclude_year_month_list=None):
     monthsList = []
     if end_date is None:
         end_date = date.today()
     for dt in rrule(MONTHLY, dtstart=start_date, until=end_date):
-        monthsList.append(datetime.strftime(dt.date(),'%Y-%m'))
+        temp_year_month = datetime.strftime(dt.date(),'%Y-%m')
+        if exclude_year_month_list is not None :
+            if temp_year_month not in exclude_year_month_list:
+                monthsList.append(temp_year_month)
+        else :
+            monthsList.append(temp_year_month)
+
     return monthsList
 
 def getAvailableDates(datesList):
@@ -117,16 +123,18 @@ def insertDay(tupleElement):
     tupleElement = tuple(tempList)
     return tupleElement
 
+#rentrak
 def extractDate(regex_from_json,filename):
     for pattern in regex_from_json:
         match = re.findall(pattern,filename)
         if match:
-            if int(match[0][0]) > 2015:
+            if int(match[0][0]) > 2014:
                 if len(match[0]) < 3:
                     match = insertDay(match[0])
                     return match
                 return match[0]
 
+#hpe
 def extractDateAndDatasource(regex_from_json,filename):
     for pattern in regex_from_json:
         match = re.findall(pattern,filename,flags=re.IGNORECASE)
@@ -135,7 +143,7 @@ def extractDateAndDatasource(regex_from_json,filename):
                 return {match[0][0]:match[0][1:4]}
 
 def getStartDate(dateElement):
-    return max(dateElement,date(2016,1,1))
+    return max(dateElement,date(2015,1,1))
 
 def getEndDate(dateElement):
     return min(dateElement,date.today())
@@ -146,3 +154,11 @@ def prefixBuilder(prefix,**subs_value):
     prefix_with_country_year_month = re.sub(r'\${month}',subs_value.get('month'),prefix_with_country_year)
 
     return prefix_with_country_year_month
+
+#sharethis
+def extractDateAndPart(regex_from_json,filename):
+    for pattern in regex_from_json:
+        match = re.findall(pattern,filename,flags=re.IGNORECASE)
+        if match:
+            if int(match[0][0]) > 2016:
+                return {match[0][3]:match[0][0:3]}

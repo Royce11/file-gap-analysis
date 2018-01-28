@@ -59,10 +59,10 @@ def comscoreRowWriter(currentSheet,datesSet,startRow,**keywords):
             keywords['year-month'] = key
             keywords['dates'] = str(value)
             keywords['count'] = len(value)
-            #vendor	datasource	cadence	type	country	year-month	dates	count
+            #vendor	datasource	cadence	flow	country	year-month	dates	count
             fieldNamesDict = {'A': keywords.get('datasource'),
                               'B' : keywords.get('cadence'),
-                              'C' : keywords.get('type'),
+                              'C' : keywords.get('flow'),
                               'D' : keywords.get('country').upper(),
                               'E' : keywords.get('year-month'),
                               'F' : keywords.get('dates'),
@@ -104,7 +104,7 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
 
             yearMonthsRangeList = GeneralUtils.getMonthsRange(start_date,end_date)
 
-            keywords['type'] = args.get('type')
+            keywords['flow'] = args.get('flow')
             country_list = args.get('country')
             keywords['regex'] = args.get('regex')
 
@@ -140,12 +140,12 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
                         clean = cleanInfo.replace('/','%',1).split('%')[1]
                         subs_value = {'country' : country.lower(), 'year' : yearMonth_prefix.split('-')[0], 'month' : yearMonth_prefix.split('-')[1]}
                         cleanPrefix = GeneralUtils.prefixBuilder(clean,**subs_value)
-                        if keywords.get('type') == "comscore_to_liveramp" :
+                        if keywords.get('flow') == "comscore_to_liveramp" :
                             response = client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/')
                             cumulativeResponse.append(S3Utilities.getFinalContentFromResponse(client, response , cleanBucket))
                         else :
                             cumulativeResponse.append(client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/'))
-                    if keywords.get('type') == "comscore_to_liveramp" :
+                    if keywords.get('flow') == "comscore_to_liveramp" :
                         for response in cumulativeResponse:
                             CleanAvailableDatesSet.general.update(comscoreToLiverampCleanFile(response,keywords.get('regex')))
                     else :
@@ -158,7 +158,7 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
 
                 currentSheet = unprocessedWB[vendor]
                 #check if unprocessed dates set has only 1 element
-                keywords['type'] = args.get('type')
+                keywords['flow'] = args.get('flow')
                 startUnPRow = comscoreRowWriter(currentSheet,sorted(UnprocessedDatesSet.general),startUnPRow,**keywords)
 
                 unprocessedWB.save(unprocessedWB_out)
@@ -191,7 +191,7 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
                         missingDatesSet.append(missingDate)
 
                 currentSheet = missingWB[vendor]
-                keywords['type'] = args.get('type')
+                keywords['flow'] = args.get('flow')
                 startMissRow = comscoreRowWriter(currentSheet,sorted(missingDatesSet),startMissRow,**keywords)
 
                 missingWB.save(missingWB_out)

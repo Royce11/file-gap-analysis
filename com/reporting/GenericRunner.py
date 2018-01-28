@@ -1,7 +1,7 @@
 import json
 import openpyxl
 import os
-from com.reporting import RentrakHandler,ExcelUtilities,HPEHandler,ComscoreHandler
+from com.reporting import RentrakHandler,ExcelUtilities,HPEHandler,ComscoreHandler,SharethisHandler
 import sys
 from datetime import datetime,date
 
@@ -48,6 +48,8 @@ def getHandler(vendors, **keywords):
     if vendor == 'comscore':
         ComscoreHandler.processExecute(vendors,inputStartDate,inputEndDate,**keywords)
         # ComscoreHandler.ComscoreHandler.processExecute(vendors,inputStartDate,inputEndDate,**keywords)
+    if vendor == 'sharethis':
+        SharethisHandler.processExecute(vendors,inputStartDate,inputEndDate,**keywords)
 
 
 

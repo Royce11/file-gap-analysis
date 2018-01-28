@@ -9,23 +9,29 @@ unprocessedWB_out = '/home/osboxes/shared-windows10/UnprocessedDates.xlsx'
 missingWB_out = '/home/osboxes/shared-windows10/MissingDates.xlsx'
 client = S3Utilities.getS3Client()
 
-def rentrakFileHandler(response,dateRegex):
+def rentrakRawFileHandler(response,dateRegex):
     generalFilePattern = []
-    hispFilePattern = []
 
-    FilePattern = GeneralUtils.namedtuple_with_defaults('FilePattern', 'general hispanic')
+    FilePattern = GeneralUtils.namedtuple_with_defaults('FilePattern', 'general')
 
     for fullFileName in response:
-        if "hisp" in fullFileName:
-            hispanicExtractedDate=GeneralUtils.extractDate(dateRegex,fullFileName)
-            if hispanicExtractedDate:
-                hispFilePattern.append(GeneralUtils.getFormattedDate(hispanicExtractedDate))
-        else:
-            extractedDate=GeneralUtils.extractDate(dateRegex,fullFileName)
-            if extractedDate:
-                generalFilePattern.append(GeneralUtils.getFormattedDate(extractedDate))
+        extractedDate=GeneralUtils.extractDate(dateRegex,fullFileName)
+        if extractedDate:
+            generalFilePattern.append(GeneralUtils.getFormattedDate(extractedDate))
 
-    return FilePattern(set(generalFilePattern),set(hispFilePattern))
+    return FilePattern(set(generalFilePattern))
+
+def rentrakCleanFileHandler(response):
+
+    CleanFilePattern = GeneralUtils.namedtuple_with_defaults('CleanFilePattern', 'general')
+
+    CleanFilePattern.general = []
+
+    if "CommonPrefixes" in response.keys():
+        for prefixDictElement in response.get('CommonPrefixes'):
+            CleanFilePattern.general.append(GeneralUtils.getFormattedDate(prefixDictElement.get('Prefix').split('/')[5].strip("dt=")))
+
+    return set(CleanFilePattern.general)
 
 def rentrakRowWriter(currentSheet,datesSet,startRow,**keywords):
     tempDict = OrderedDict()
@@ -72,137 +78,116 @@ def processExecute(vendors,inputStartDate,inputEndDate,**keywords):
         for args in datasource.get('metadata'):
 
             if args.get('arrival_start_date') :
-                arrival_date = args.get('arrival_start_date')
-                arrival_date = datetime.date(datetime.strptime(arrival_date,"%Y-%m-%d"))
-                start_date = GeneralUtils.getStartDate(max(arrival_date,inputStartDate))
+                arrival_start_date = args.get('arrival_start_date')
+                arrival_start_date = datetime.date(datetime.strptime(arrival_start_date,"%Y-%m-%d"))
+                start_date = GeneralUtils.getStartDate(max(arrival_start_date,inputStartDate))
             else:
                 start_date = GeneralUtils.getStartDate(inputStartDate)
 
-            end_date = GeneralUtils.getEndDate(inputEndDate)
+            if args.get('arrival_end_date') :
+                arrival_end_date = args.get('arrival_end_date')
+                arrival_end_date = datetime.date(datetime.strptime(arrival_end_date,"%Y-%m-%d"))
+                end_date = GeneralUtils.getEndDate(min(arrival_end_date,inputEndDate))
+            else:
+                end_date = GeneralUtils.getEndDate(inputEndDate)
 
-            missingHispDatesSet =[]
-            missingDatesSet = []
+            yearMonthsRangeList = GeneralUtils.getMonthsRange(start_date,end_date,args.get('exclude_year_month'))
 
-            keywords['type'] = args.get('type')
-            keywords['country'] = args.get('country')
+            if args.get('exclude_year_month'):
+                start_date = datetime.date(datetime.strptime(min(yearMonthsRangeList) + '-01', '%Y-%m-%d'))
+                end_date = datetime.date(datetime.strptime(max(yearMonthsRangeList) + '-30', '%Y-%m-%d'))
+
+            country_list = args.get('country')
             keywords['regex'] = args.get('regex')
-
-            RawAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('RawAvailableDatesSet','general hispanic')
-            CleanAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('CleanAvailableDatesSet','general hispanic')
-
-            AvailableDatesSet = GeneralUtils.namedtuple_with_defaults('AvailableDatesSet','general hispanic')
-
-            UnprocessedDatesSet = GeneralUtils.namedtuple_with_defaults('UnprocessedDatesSet','general hispanic')
-            MissedDatesSet = GeneralUtils.namedtuple_with_defaults('MissedDatesSet','general hispanic')
-
-            RawAvailableDatesSet.general = set()
-            RawAvailableDatesSet.hispanic = set()
-            CleanAvailableDatesSet.general = set()
-            CleanAvailableDatesSet.hispanic = set()
-
-
-            args['vendor'] = vendor
-            response = dict()
-            cumulativeResponse = []
-            for rawInfo in args.get('raw'):
-                rawBucket = rawInfo.split('/')[0]
-                rawPrefix = rawInfo.replace('/','%',1).split('%')[1]
-                response = client.list_objects_v2(Bucket= rawBucket ,Prefix = rawPrefix,Delimiter = '/')
-                cumulativeResponse.append(S3Utilities.getFinalContentFromResponse(client, response , rawBucket))
-                # finalContentList = []
-            for response in cumulativeResponse:
-                AvailableDatesSet = rentrakFileHandler(response,keywords.get('regex'))
-                RawAvailableDatesSet.general.update(AvailableDatesSet.general)
-                if AvailableDatesSet.hispanic:
-                    RawAvailableDatesSet.hispanic.update(AvailableDatesSet.hispanic)
-
-
-            cumulativeResponse = []
-            for cleanInfo in args.get('clean'):
-                cleanBucket = cleanInfo.split('/')[0]
-                cleanPrefix = cleanInfo.replace('/','%',1).split('%')[1]
-                response = client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/')
-                cumulativeResponse.append(S3Utilities.getFinalContentFromResponse(client, response , cleanBucket))
-                # finalContentList = []
-            for response in cumulativeResponse:
-                AvailableDatesSet = rentrakFileHandler(response,keywords.get('regex'))
-                CleanAvailableDatesSet.general.update(AvailableDatesSet.general)
-                if AvailableDatesSet.hispanic:
-                    CleanAvailableDatesSet.hispanic.update(AvailableDatesSet.hispanic)
-
-
-            UnprocessedDatesSet.general = RawAvailableDatesSet.general - CleanAvailableDatesSet.general
-            UnprocessedDatesSet.general = GeneralUtils.getFilteredDates(UnprocessedDatesSet.general,start_date,end_date)
-            if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
-                UnprocessedDatesSet.hispanic = RawAvailableDatesSet.hispanic - CleanAvailableDatesSet.hispanic
-                UnprocessedDatesSet.hispanic = GeneralUtils.getFilteredDates(UnprocessedDatesSet.hispanic,start_date,end_date)
-
-
-            currentSheet = unprocessedWB[vendor]
-            #check if unprocessed dates set has only 1 element
             keywords['type'] = args.get('type')
-            startUnPRow = rentrakRowWriter(currentSheet,sorted(UnprocessedDatesSet.general),startUnPRow,**keywords)
-            # unprocessedWB.save(unprocessedWB_out)
-            if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
-                if UnprocessedDatesSet.hispanic:
-                    keywords['type'] = 'hispanic'
-                    startUnPRow = rentrakRowWriter(currentSheet,sorted(UnprocessedDatesSet.hispanic),startUnPRow,**keywords)
 
-            unprocessedWB.save(unprocessedWB_out)
+            for country in country_list:
+                keywords['country'] = country
+                RawAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('RawAvailableDatesSet','general')
+                CleanAvailableDatesSet = GeneralUtils.namedtuple_with_defaults('CleanAvailableDatesSet','general')
 
-            if datasource.get('cadence') == "daily":
+                UnprocessedDatesSet = GeneralUtils.namedtuple_with_defaults('UnprocessedDatesSet','general')
+                MissingDatesSet = GeneralUtils.namedtuple_with_defaults('MissingDatesSet','general')
 
-                missingDatesSet = set(GeneralUtils.d_range(start_date,end_date,datasource.get('cadence'))) - (RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
-                if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
-                    missingHispDatesSet = set(GeneralUtils.d_range(date(start_date,end_date,datasource.get('cadence')))) - (RawAvailableDatesSet.hispanic.union(CleanAvailableDatesSet.hispanic))
+                RawAvailableDatesSet.general = set()
+                CleanAvailableDatesSet.general = set()
 
-            if datasource.get('cadence') == 'weekly':
-                missingDatesSet = []
-                weeks_set = set(GeneralUtils.w_range(start_date,end_date=end_date))
+                UnprocessedDatesSet.general =set()
+                MissingDatesSet.general =set()
 
-                rawAvailableWeeksSet = GeneralUtils.getWeeksSet(RawAvailableDatesSet.general)
-                cleanAvailableWeeksSet = GeneralUtils.getWeeksSet(CleanAvailableDatesSet.general)
-                missingWeeksSet = weeks_set - (rawAvailableWeeksSet.union(cleanAvailableWeeksSet))
+                args['vendor'] = vendor
+                response = dict()
+                cumulativeResponse = []
+                for rawInfo in args.get('raw'):
+                    for yearMonth_prefix in yearMonthsRangeList:
+                        rawBucket = rawInfo.split('/')[0]
+                        raw = rawInfo.replace('/','%',1).split('%')[1]
+                        subs_value = {'country' : country, 'year' : yearMonth_prefix.split('-')[0], 'month' : yearMonth_prefix.split('-')[1]}
+                        rawPrefix = GeneralUtils.prefixBuilder(raw,**subs_value)
+                        response = client.list_objects_v2(Bucket= rawBucket ,Prefix = rawPrefix,Delimiter = '/')
+                        cumulativeResponse.append(S3Utilities.getFinalContentFromResponse(client, response , rawBucket))
+                        S3Utilities.finalContentList = []
+                        # finalContentList = []
+                flat_cumulativeResponse = [item for sublist in cumulativeResponse for item in sublist]
+                RawAvailableDatesSet = rentrakRawFileHandler(flat_cumulativeResponse,keywords.get('regex'))
 
-                for missingWeeks in missingWeeksSet:
-                    missingDatesSet.append(Week.day(missingWeeks,0))
+                cumulativeResponse = []
+                for cleanInfo in args.get('clean'):
+                    for yearMonth_prefix in yearMonthsRangeList:
+                        cleanBucket = cleanInfo.split('/')[0]
+                        clean = cleanInfo.replace('/','%',1).split('%')[1]
+                        subs_value = {'country' : country.lower(), 'year' : yearMonth_prefix.split('-')[0], 'month' : yearMonth_prefix.split('-')[1]}
+                        cleanPrefix = GeneralUtils.prefixBuilder(clean,**subs_value)
+                        cumulativeResponse.append(client.list_objects_v2(Bucket= cleanBucket ,Prefix = cleanPrefix,Delimiter = '/'))
+                        S3Utilities.finalContentList = []
+                        # finalContentList = []
+                for response in cumulativeResponse:
+                    CleanAvailableDatesSet.general.update(rentrakCleanFileHandler(response))
 
-                if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
-                    rawAvailableWeeksSet = GeneralUtils.getWeeksSet(RawAvailableDatesSet.hispanic)
-                    cleanAvailableWeeksSet = GeneralUtils.getWeeksSet(CleanAvailableDatesSet.hispanic)
+                if RawAvailableDatesSet or CleanAvailableDatesSet:
+                    UnprocessedDatesSet.general = RawAvailableDatesSet.general - CleanAvailableDatesSet.general
+                    UnprocessedDatesSet.general = GeneralUtils.getFilteredDates(UnprocessedDatesSet.general,start_date,end_date)
+
+                    currentSheet = unprocessedWB[vendor]
+                    #check if unprocessed dates set has only 1 element
+                    if UnprocessedDatesSet.general:
+                        startUnPRow = rentrakRowWriter(currentSheet,sorted(UnprocessedDatesSet.general),startUnPRow,**keywords)
+                    unprocessedWB.save(unprocessedWB_out)
+
+                if datasource.get('cadence') == "daily":
+                    MissingDatesSet.general = set(GeneralUtils.d_range(start_date,end_date)) - (RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
+                    #Assumptions => excluded months are consecutive
+                    if args.get('exclude_year_month'):
+                        exclude_start = datetime.date((datetime.strptime(min(args.get('exclude_year_month')) + '-01','%Y-%m-%d')))
+                        exclude_end = datetime.date((datetime.strptime(max(args.get('exclude_year_month')) + '-31','%Y-%m-%d')))
+                        MissingDatesSet.general = MissingDatesSet.general - set(GeneralUtils.d_range(exclude_start,exclude_end))
+
+                if datasource.get('cadence') == 'weekly':
+                    # MissingDatesSet.general = set()
+                    weeks_set = set(GeneralUtils.w_range(start_date,end_date=end_date))
+                    rawAvailableWeeksSet = GeneralUtils.getWeeksSet(RawAvailableDatesSet.general)
+                    cleanAvailableWeeksSet = GeneralUtils.getWeeksSet(CleanAvailableDatesSet.general)
                     missingWeeksSet = weeks_set - (rawAvailableWeeksSet.union(cleanAvailableWeeksSet))
 
                     for missingWeeks in missingWeeksSet:
-                        missingHispDatesSet.append(Week.day(missingWeeks,0))
+                        MissingDatesSet.general.update(Week.day(missingWeeks,0))
 
-            if datasource.get('cadence') == 'monthly':
-                missingDatesSet =[]
-                monthsRange = GeneralUtils.getMonthsRange(start_date=start_date,end_date=end_date)
-
-                availableMonthsList = GeneralUtils.getMonthsSet(RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
-                missingMonthsSet = set(monthsRange) - set(availableMonthsList)
-                for yearMonth in missingMonthsSet:
-                    missingDate = yearMonth + '-01'
-                    missingDate = datetime.date(datetime.strptime(missingDate,'%Y-%m-%d'))
-                    missingDatesSet.append(missingDate)
-                if RawAvailableDatesSet.hispanic or CleanAvailableDatesSet.hispanic:
-                    availableMonthsList = GeneralUtils.getMonthsSet(RawAvailableDatesSet.hispanic.union(CleanAvailableDatesSet.hispanic))
-                    missingMonthsSet = set(monthsRange) - set(availableMonthsList)
+                if datasource.get('cadence') == 'monthly':
+                    yearMonth_list = []
+                    monthsRange = GeneralUtils.getMonthsRange(start_date=start_date,end_date=end_date)
+                    availableMonthsList = GeneralUtils.getMonthsSet(RawAvailableDatesSet.general.union(CleanAvailableDatesSet.general))
+                    if args.get('exclude_year_month'):
+                        missingMonthsSet = set(monthsRange) - set(availableMonthsList).union(args.get('exclude_year_month'))
+                    else :
+                        missingMonthsSet = set(monthsRange) - set(availableMonthsList)
                     for yearMonth in missingMonthsSet:
-                        missingDate = yearMonth + '-01'
-                        missingDate = datetime.date(datetime.strptime(missingDate,'%Y-%m-%d'))
-                        missingHispDatesSet.append(missingDate)
+                       yearMonth_list.append(datetime.date(datetime.strptime(yearMonth + '-01','%Y-%m-%d')))
+                    MissingDatesSet.general.update(yearMonth_list)
 
-            currentSheet = missingWB[vendor]
-            keywords['type'] = args.get('type')
-            startMissRow = rentrakRowWriter(currentSheet,sorted(missingDatesSet),startMissRow,**keywords)
+                currentSheet = missingWB[vendor]
+                if MissingDatesSet.general:
+                    startMissRow = rentrakRowWriter(currentSheet,sorted(MissingDatesSet.general),startMissRow,**keywords)
 
-            missingWB.save(missingWB_out)
-
-            if missingHispDatesSet:
-                keywords['type'] = 'hispanic'
-                startMissRow = rentrakRowWriter(currentSheet,sorted(missingHispDatesSet),startMissRow,**keywords)
-
-                missingWB.save(missingWB_out)
+                    missingWB.save(missingWB_out)
 
         print("Done ......." +datasource.get('datasource'))
